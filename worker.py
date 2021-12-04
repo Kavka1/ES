@@ -1,16 +1,16 @@
 from typing import Type, Dict, List, Tuple
 import numpy as np
-from Repo.ES_base.utils import ShareNoiseTable
+from env import Env_wrapper
+from utils import ShareNoiseTable
 from model import Policy
 import ray
-import gym
 
-
+@ray.remote
 class Worker(object):
     def __init__(
         self,
-        env_name: str,
-        model_params: Dict,
+        env_config: Dict,
+        model_config: Dict,
         noise_table: np.float64,
         delta_sample_seed: int,
         delta_std: float,
@@ -19,9 +19,9 @@ class Worker(object):
     ) -> None:
         super().__init__()
 
-        self.env = gym.make(env_name)
-        self.policy = Policy(model_params)
-        self.NoiseTable = ShareNoiseTable(ray.get(noise_table), delta_sample_seed)
+        self.env = Env_wrapper(env_config)
+        self.policy = Policy(model_config)
+        self.NoiseTable = ShareNoiseTable(noise_table, delta_sample_seed)
 
         self.delta_std = delta_std
 
