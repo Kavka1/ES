@@ -1,3 +1,3 @@
 # ES_base
 
-Basic reproduction of Evolutionary Strategy.
+Basic reproduction of Evolutionary Strategies.

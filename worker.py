@@ -11,8 +11,8 @@ class Worker(object):
         self,
         env_name: str,
         model_params: Dict,
-        noise_id: np.float64,
-        seed_noise_table: int,
+        noise_table: np.float64,
+        delta_sample_seed: int,
         delta_std: float,
         num_rollouts: int,
         num_evaluation: int
@@ -21,14 +21,14 @@ class Worker(object):
 
         self.env = gym.make(env_name)
         self.policy = Policy(model_params)
-        self.NoiseTable = ShareNoiseTable(ray.get(noise_id), seed_noise_table)
+        self.NoiseTable = ShareNoiseTable(ray.get(noise_table), delta_sample_seed)
 
         self.delta_std = delta_std
 
         self.num_rollouts = num_rollouts
         self.num_evaluation = num_evaluation
 
-    def update(self, origin_policy: np.array) -> None:
+    def do_rollouts(self, origin_policy: np.array) -> None:
         delta_sp, rollout_rewards, rollout_steps = [], [], 0
 
         for i_rollout in range(self.num_rollouts):
