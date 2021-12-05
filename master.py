@@ -66,6 +66,7 @@ class Master(object):
 
         gradient, count = batch_weighted_sum(rewards=rewards, deltas=deltas, batch_size=self.batch_size)
         gradient /= len(delta_sp)
+        gradient /= self.delta_std
         gradient /= (np.linalg.norm(gradient) / (self.policy.total_size + 1e-8))
 
         return gradient

@@ -1,0 +1,26 @@
+delta_std: 0.1
+env_config:
+  env_name: HalfCheetah-v2
+  max_episode_length: 1000
+max_iteration: 5000
+model_config:
+  action_high: 1.0
+  action_low: -1.0
+  hidden_layers:
+  - 64
+  - 64
+  in_dim: 17
+  out_dim: 6
+noise_sample_seed: 10
+noise_table_seed: 1234
+noise_table_size: 250000
+num_evaluation: 10
+num_rollouts: 10
+num_workers: 14
+optimizer_config:
+  batch_size: 500
+  beta1: 0.9
+  beta2: 0.999
+  learning_rate: 0.05
+result_path: /home/xukang/GitRepo/ES_base/results/HalfCheetah-v2_12-05_20-49/
+save_model_interval: 250
