@@ -19,7 +19,6 @@ def create_experiment_dir(config: Dict) -> None:
 
     with open(result_path + 'config.yaml', 'w', encoding='utf-8') as f:
         yaml.dump(config, f, indent=2)
-    
     return config
 
 
