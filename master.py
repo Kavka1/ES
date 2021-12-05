@@ -1,15 +1,15 @@
 from typing import *
-from gym.core import Env
 import numpy as np
 from numpy.lib.npyio import save
 import ray
-from ray.worker import remote
 from model import Policy
-from utils import ShareNoiseTable, check_path, create_shared_noise
+from utils import check_path
+from noise import create_shared_noise, ShareNoiseTable
 from worker import Worker
 from optimizer import Adam
 from utils import batch_weighted_sum
 from env import Env_wrapper
+from obs_filter import MeanStdFilter
 
 
 class Master(object):
@@ -27,7 +27,9 @@ class Master(object):
 
         self.policy = Policy(config['model_config'])
         self.env = Env_wrapper(config['env_config'])
+
         self.init_noise_table()
+        self.init_obsfilter(self.env.observation_space.shape)
         self.init_workers(config['model_config'], config['env_config'])
         self.init_optimizer(config['optimizer_config'])
 
@@ -54,6 +56,9 @@ class Master(object):
         self.optimizer = Adam(optimizer_config)
         self.batch_size = optimizer_config['batch_size']
 
+    def init_obsfilter(self, shape: Tuple) -> None:
+        self.obs_filter = MeanStdFilter(shape)
+
     def gradient_estimation(self, rewards: np.array, delta_sp: np.array) -> np.array:
         rewards = (rewards - np.mean(rewards)) / (np.std(rewards) + 1e-8)
         rewards = rewards[:, 0] - rewards[:, 1]     # Authentic Gradient Estimation: Pos reward - Neg reward
@@ -69,13 +74,18 @@ class Master(object):
         update = self.optimizer.update(gradient)
         self.policy.increment_update(update)
 
+    def synchronous_filters(self, mean: List[np.array], square_sum: List[np.array], count: int) -> None:
+        mean = sum(mean) / self.num_workers
+        square_sum = sum(square_sum) / self.num_workers        
+        self.obs_filter.update(mean, square_sum, count)
+
     def evaluation(self) -> float:
         total_r = 0
         for i_evaluation in range(self.num_evaluation):
             done = False
             obs = self.env.reset()
             while not done:
-                a = self.policy.forward(obs)    # Todo: scale
+                a = self.policy.forward(self.obs_filter(obs))
                 obs, r, done, _ = self.env.step(a)
                 total_r += r
         return total_r / self.num_evaluation
@@ -84,3 +94,9 @@ class Master(object):
         check_path(save_path)
         np.save(save_path + remark, self.policy.get_params())
         print(f"------Policy parameters saved to {save_path}------")
+
+    def save_filter(self, save_path: str, remark: str) -> None:
+        check_path(save_path)
+        filter_params = np.array([self.obs_filter.mean, self.obs_filter.square_sum, self.obs_filter.count])
+        np.save(save_path + remark, filter_params)
+        print(f'------Obs filter parameters saved to {save_path}------')

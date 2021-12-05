@@ -19,7 +19,7 @@ num_workers: 12
 num_rollouts: 10
 num_evaluation: 10
 
-noise_table_size: 250000
+noise_table_size: 100000
 noise_table_seed: 1234
 noise_sample_seed: 10
 delta_std: 0.02

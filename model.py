@@ -1,3 +1,5 @@
+from functools import total_ordering
+import os
 from typing import List, Tuple, Dict
 import numpy as np
 from numpy.lib.function_base import select
@@ -60,3 +62,12 @@ class Policy(object):
             self.b[f'{i}'] += bias_increment[:self.b[f'{i}'].size].reshape(self.total_layers[i+1])
             weight_increment = weight_increment[self.W[f'{i}'].size:]
             bias_increment = bias_increment[self.b[f'{i}'].size:]        
+
+    def load_params(self, path: str) -> None:
+        assert os.path.exists(path)
+        mix_params = np.load(path)
+        
+        assert mix_params.size == self.total_size
+
+        self.update_params(mix_params)
+        print(f"------Load params from {path}------")

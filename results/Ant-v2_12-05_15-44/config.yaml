@@ -1,0 +1,26 @@
+delta_std: 0.02
+env_config:
+  env_name: Ant-v2
+  max_episode_length: 500
+max_iteration: 5000
+model_config:
+  action_high: 1.0
+  action_low: -1.0
+  hidden_layers:
+  - 100
+  - 100
+  in_dim: 111
+  out_dim: 8
+noise_sample_seed: 10
+noise_table_seed: 1234
+noise_table_size: 100000
+num_evaluation: 10
+num_rollouts: 10
+num_workers: 12
+optimizer_config:
+  batch_size: 500
+  beta1: 0.9
+  beta2: 0.999
+  learning_rate: 0.0005
+result_path: /home/xukang/GitRepo/ES_base/results/Ant-v2_12-05_15-44/
+save_model_interval: 500

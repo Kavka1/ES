@@ -1,11 +1,8 @@
-import sys
 from typing import *
 import gym
 import numpy as np
-import ray
 import os
 import datetime
-
 import yaml
 
 
@@ -24,30 +21,6 @@ def create_experiment_dir(config: Dict) -> None:
         yaml.dump(config, f, indent=2)
     
     return config
-
-@ray.remote
-def create_shared_noise(seed: int, count: int = 2500000):
-    noise = np.random.RandomState(seed).randn(count).astype(np.float64)
-    return noise
-
-
-class ShareNoiseTable(object):
-    def __init__(self, noise: np.float64, seed: int) -> None:
-        super().__init__()
-        self.noise = noise
-        self.random_generator = np.random.RandomState(seed)
-
-    def get_noise(self, start_point: int, size: int) -> np.array:
-        return self.noise[start_point : start_point + size]
-
-    def sample_start_point(self, size: int) -> int:
-        sp = self.random_generator.randint(0, len(self.noise) - size + 1)
-        return sp
-    
-    def sample_delta(self, size: int) -> Tuple[int, np.array]:
-        sp = self.sample_start_point(size)
-        noise = self.get_noise(sp, size)
-        return sp, noise
 
 
 def batch_yield(items: List, batch_size: int) -> Tuple:
@@ -72,7 +45,7 @@ def batch_weighted_sum(rewards: np.array, deltas: List[np.array], batch_size: in
     return total, num_items_summed
 
 
-def supplement_config(config: Dict):
+def supplement_config(config: Dict) -> Dict:
     env_config = config['env_config']
     model_config = config['model_config']
     

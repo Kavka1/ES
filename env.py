@@ -21,3 +21,11 @@ class Env_wrapper(object):
 
     def render(self) -> None:
         self.env.render()
+
+    @property
+    def observation_space(self) -> gym.spaces.Box:
+        return self.env.observation_space
+    
+    @property
+    def action_space(self) -> gym.spaces.Box:
+        return self.env.action_space
