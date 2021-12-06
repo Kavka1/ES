@@ -1,5 +1,6 @@
 from typing import Dict, List, Tuple, Type, Union
 import numpy as np
+import os
 
 
 class RunningStats(object):
@@ -51,6 +52,12 @@ class MeanStdFilter(object):
         self.rs._mean[...] = mean
         self.rs._square_sum[...] = square_sum
         self.rs._count = count
+
+    def load_params(self, path: str) -> None:
+        assert os.path.exists(path)
+        mix_params = np.load(path, allow_pickle=True)
+        self.update(mix_params[0], mix_params[1], mix_params[2])
+        print(f"------Loaded obs filter params from {path}------")
 
     @property
     def mean(self) -> np.array:

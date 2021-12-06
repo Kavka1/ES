@@ -6,6 +6,8 @@ from model import Policy
 from env import Env_wrapper
 import yaml
 
+from obs_filter import MeanStdFilter
+
 
 
 def load_exp(result_path: str) -> Dict:
@@ -17,7 +19,7 @@ def load_exp(result_path: str) -> Dict:
 
 def create_arguments() -> Dict:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--exp_name', type=str, default='Ant-v2_12-04_23-37')
+    parser.add_argument('--exp_name', type=str, default='HalfCheetah-v2_12-05_20-58')
     parser.add_argument('--num_rollout', type=int, default=50)
     args = parser.parse_args()
     args = vars(args)
@@ -33,7 +35,10 @@ def demo() -> None:
 
     policy = Policy(config['model_config'])
     env = Env_wrapper(config['env_config'])
+    obs_filter = MeanStdFilter(shape = env.observation_space.shape)
+    
     policy.load_params(result_path + 'models/params_best.npy')
+    obs_filter.load_params(result_path + 'filters/params_best.npy')
     
     for i_rolllout in range(args['num_rollout']):
         episode_reward, episode_step = 0, 0
@@ -41,7 +46,7 @@ def demo() -> None:
         obs = env.reset()
         while not done:
             env.render()
-            a = policy.forward(obs)
+            a = policy.forward(obs_filter(obs))
             obs, r, done, _ = env.step(a)
             episode_reward += r
             episode_step += 1

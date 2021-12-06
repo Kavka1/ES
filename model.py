@@ -70,4 +70,4 @@ class Policy(object):
         assert mix_params.size == self.total_size
 
         self.update_params(mix_params)
-        print(f"------Load params from {path}------")
+        print(f"------Loaded params from {path}------")
