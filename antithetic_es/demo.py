@@ -18,7 +18,7 @@ def load_exp(result_path: str) -> Dict:
 
 def create_arguments() -> Dict:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--exp_name', type=str, default='HalfCheetah-v2_12-05_20-58')
+    parser.add_argument('--exp_result_path', type=str, default='results/Walker2d-v2_12-06_14-46')
     parser.add_argument('--num_rollout', type=int, default=50)
     args = parser.parse_args()
     args = vars(args)
@@ -28,7 +28,7 @@ def create_arguments() -> Dict:
 
 def demo() -> None:
     args = create_arguments()
-    result_path = f"/home/xukang/GitRepo/ES/antithetic_es/results/{args['exp_name']}/"
+    result_path = f"/home/xukang/GitRepo/ES/antithetic_es/results/{args['exp_result_path'].split('/')[-1]}/"
 
     config = load_exp(result_path)
 
