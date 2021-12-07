@@ -1,5 +1,5 @@
 env_config:
-  env_name: "Swimmer-v2"
+  env_name: "HalfCheetah-v2"
   max_episode_length: 1000
 model_config:
   hidden_layers:
@@ -21,4 +21,5 @@ delta_std: 0.1
 result_path: '/home/xukang/GitRepo/ES/antithetic_es/results/'
 save_model_interval: 250
 
-estimator: 'antithetic'
+estimator_type: 'antithetic'
+fitness_type: 'rank'

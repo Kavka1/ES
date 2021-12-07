@@ -1,5 +1,6 @@
 from typing import *
 import numpy as np
+from numpy.lib.function_base import gradient
 from numpy.lib.npyio import save
 import ray
 from worker import Worker
@@ -25,8 +26,13 @@ class Master(object):
         self.delta_sample_seed = config['noise_sample_seed']
         self.delta_std = config['delta_std']
 
+        self.estimator_type = config['estimator_type']
+        self.fitness_type = config['fitness_type']
+
         self.policy = Policy(config['model_config'])
         self.env = Env_wrapper(config['env_config'])
+
+        self.init_gradient_estimator()
 
         self.init_noise_table()
         self.init_obsfilter(self.env.observation_space.shape)
@@ -35,6 +41,16 @@ class Master(object):
 
         self.best_score = 0
     
+    def init_gradient_estimator(self) -> None:
+        if self.estimator_type == 'vanilla':
+            self.gradient_estimation = self.gradient_estimation_vanilla
+        elif self.estimator_type == 'antithetic':
+            self.gradient_estimation = self.gradient_estimation_anti
+        elif self.estimator_type == 'finite_difference':
+            self.gradient_estimation = self.gradient_estimation_FD
+        else:
+            raise ValueError(f"The gradient estimator type {self.estimator_type} illegal.")
+
     def init_noise_table(self) -> None:
         self.noise_table = create_shared_noise.remote(self.noise_table_seed, self.noise_table_size)
         self.deltas = ShareNoiseTable(ray.get(self.noise_table), self.delta_sample_seed)
@@ -49,6 +65,7 @@ class Master(object):
                 delta_std = self.delta_std,
                 num_rollouts = self.num_rollouts,
                 num_evaluation = self.num_evaluation,
+                estimation_type = self.estimator_type
             ) for _ in range(self.num_workers)
         ]
 
@@ -59,23 +76,52 @@ class Master(object):
     def init_obsfilter(self, shape: Tuple) -> None:
         self.obs_filter = MeanStdFilter(shape)
 
-    def gradient_estimation_vanilla(self, rewards: np.array, delta_sp: np.array) -> np.array:
-        pass
+    def fitness_transform(self, rewards: np.array) -> np.array:
+        if self.fitness_type == 'value':
+            rewards = (rewards - np.mean(rewards)) / (np.std(rewards) + 1e-8)
+            return rewards
+        elif self.fitness_type == 'rank':
+            rank_index = np.argsort(rewards)
+            ranks = np.zeros(shape=len(rewards))
+            for rank, index in enumerate(rank_index):
+                ranks[index] = rank + 1
+            rewards = np.array([max(0, np.log(len(ranks)/2 + 1) - np.log(k)) for k in ranks])
+            rewards = rewards / np.sum(rewards) - 1 / len(rewards)
+            return rewards
+        else:
+            raise TypeError(f'The fitness type {self.fitness_type} illegal.')
 
-    def gradient_estimation_anti(self, rewards: np.array, delta_sp: np.array) -> np.array:
-        rewards = (rewards - np.mean(rewards)) / (np.std(rewards) + 1e-8)
-        rewards = rewards[:, 0] - rewards[:, 1]     # Authentic Gradient Estimation: Pos reward - Neg reward
+    def gradient_estimation_vanilla(self, rewards: np.array, delta_sp: np.array) -> np.array:
+        rewards = self.fitness_transform(rewards)
         deltas = [self.deltas.get_noise(sp, self.policy.total_size) for sp in delta_sp]
 
         gradient, count = batch_weighted_sum(rewards=rewards, deltas=deltas, batch_size=self.batch_size)
-        gradient /= len(delta_sp)
-        gradient /= self.delta_std
+        gradient /= (len(delta_sp) * self.delta_std)
+        gradient /= (np.linalg.norm(gradient) / (self.policy.total_size + 1e-8))
+
+        return gradient
+
+    def gradient_estimation_anti(self, rewards: np.array, delta_sp: np.array) -> np.array:
+        rewards = rewards[:, 0] - rewards[:, 1]     # Authentic Gradient Estimation: Pos reward - Neg reward
+        rewards = self.fitness_transform(rewards)
+        deltas = [self.deltas.get_noise(sp, self.policy.total_size) for sp in delta_sp]
+
+        gradient, count = batch_weighted_sum(rewards=rewards, deltas=deltas, batch_size=self.batch_size)
+        gradient /= (len(delta_sp) * self.delta_std)
         gradient /= (np.linalg.norm(gradient) / (self.policy.total_size + 1e-8))
 
         return gradient
 
     def gradient_estimation_FD(self, rewards: np.array, delta_sp: np.array) -> np.array:
-        pass
+        rewards = rewards[:, 0] - rewards[:, 1]     # Authentic Gradient Estimation: Pos reward - baseline reward
+        rewards = self.fitness_transform(rewards)
+        deltas = [self.deltas.get_noise(sp, self.policy.total_size) for sp in delta_sp]
+
+        gradient, count = batch_weighted_sum(rewards=rewards, deltas=deltas, batch_size=self.batch_size)
+        gradient /= (len(delta_sp) * self.delta_std)
+        gradient /= (np.linalg.norm(gradient) / (self.policy.total_size + 1e-8))
+
+        return gradient
 
     def apply_gradient(self, gradient: np.array) -> None:
         update = self.optimizer.update(gradient)
