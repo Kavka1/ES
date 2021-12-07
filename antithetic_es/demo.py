@@ -28,7 +28,7 @@ def create_arguments() -> Dict:
 
 def demo() -> None:
     args = create_arguments()
-    result_path = f"/home/xukang/GitRepo/ES/antithetic_es/results/{args['exp_result_path'].split('/')[-1]}/"
+    result_path = f"/home/xukang/GitRepo/ES/antithetic_es/results/{args['exp_path'].split('/')[-1]}/"
 
     config = load_exp(result_path)
 

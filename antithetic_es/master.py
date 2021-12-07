@@ -59,7 +59,10 @@ class Master(object):
     def init_obsfilter(self, shape: Tuple) -> None:
         self.obs_filter = MeanStdFilter(shape)
 
-    def gradient_estimation(self, rewards: np.array, delta_sp: np.array) -> np.array:
+    def gradient_estimation_vanilla(self, rewards: np.array, delta_sp: np.array) -> np.array:
+        pass
+
+    def gradient_estimation_anti(self, rewards: np.array, delta_sp: np.array) -> np.array:
         rewards = (rewards - np.mean(rewards)) / (np.std(rewards) + 1e-8)
         rewards = rewards[:, 0] - rewards[:, 1]     # Authentic Gradient Estimation: Pos reward - Neg reward
         deltas = [self.deltas.get_noise(sp, self.policy.total_size) for sp in delta_sp]
@@ -70,6 +73,9 @@ class Master(object):
         gradient /= (np.linalg.norm(gradient) / (self.policy.total_size + 1e-8))
 
         return gradient
+
+    def gradient_estimation_FD(self, rewards: np.array, delta_sp: np.array) -> np.array:
+        pass
 
     def apply_gradient(self, gradient: np.array) -> None:
         update = self.optimizer.update(gradient)
