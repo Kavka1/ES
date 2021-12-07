@@ -6,7 +6,7 @@ model_config:
     - 64
     - 64
 optimizer_config:
-  learning_rate: 0.0025
+  learning_rate: 0.005
   beta1: 0.9
   beta2: 0.999
   batch_size: 500
@@ -18,7 +18,7 @@ noise_table_size: 250000
 noise_table_seed: 1234
 noise_sample_seed: 10
 delta_std: 0.1
-result_path: '/home/xukang/GitRepo/ES/antithetic_es/results/'
+result_path: '/home/xukang/GitRepo/ES/NaturalES/results/'
 save_model_interval: 250
 
 estimator_type: 'antithetic'

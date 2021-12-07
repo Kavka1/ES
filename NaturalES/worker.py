@@ -1,4 +1,4 @@
-from typing import Type, Dict, List, Tuple
+from typing import Callable, Type, Dict, List, Tuple
 import numpy as np
 import ray
 
@@ -34,15 +34,14 @@ class Worker(object):
         self.num_evaluation = num_evaluation
 
         self.estimation_type = estimation_type
-        self.init_do_rollouts()
-    
-    def init_do_rollouts(self) -> None:
+
+    def do_rollouts(self, original_policy: np.array) -> None:
         if self.estimation_type == 'vanilla':
-            self.do_rollouts = self.do_rollouts_vanilla
+            return self.do_rollouts_vanilla(original_policy)
         elif self.estimation_type == 'antithetic':
-            self.do_rollouts = self.do_rollouts_anti
+            return self.do_rollouts_anti(original_policy)
         elif self.estimation_type == 'finite_difference':
-            self.do_rollouts = self.do_rollouts_FD
+            return self.do_rollouts_FD(original_policy)
         else:
             raise ValueError(f"The estimator type {self.estimation_type} illegal.")
 

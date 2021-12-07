@@ -12,10 +12,7 @@ def check_path(path: str) -> None:
 
 
 def create_experiment_dir(config: Dict) -> None:
-    exp_name = f"{config['env_config']['env_name']}_\
-                    estimator-{config['estimator_type']}_\
-                    fitness-{config['fitness_type']}_\
-                    {datetime.datetime.now().strftime('%m-%d_%H-%M')}"
+    exp_name = f"{config['env_config']['env_name']}_estimator-{config['estimator_type']}_fitness-{config['fitness_type']}_{datetime.datetime.now().strftime('%m-%d_%H-%M')}"
     result_path = config['result_path'] + exp_name + '/'
     check_path(result_path)
     config.update({'result_path': result_path})

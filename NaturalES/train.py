@@ -10,7 +10,7 @@ from ES.common.utils import create_experiment_dir, supplement_config
 
 
 def load_config() -> Dict:
-    file_path = '/home/xukang/GitRepo/ES/antithetic_es/config.yaml'
+    file_path = '/home/xukang/GitRepo/ES/NaturalES/config.yaml'
     with open(file_path, 'r', encoding='utf-8') as f:
         config = yaml.safe_load(f.read())
     return config

@@ -81,7 +81,7 @@ class Master(object):
             rewards = (rewards - np.mean(rewards)) / (np.std(rewards) + 1e-8)
             return rewards
         elif self.fitness_type == 'rank':
-            rank_index = np.argsort(rewards)
+            rank_index = np.argsort(-rewards)
             ranks = np.zeros(shape=len(rewards))
             for rank, index in enumerate(rank_index):
                 ranks[index] = rank + 1
