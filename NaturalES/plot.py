@@ -38,7 +38,7 @@ def load_stats(path: str) -> np.array:
 def plot_NES_variants() -> None:
     path_vanilla = RESULT_PATH + 'HalfCheetah-v2_estimator-vanilla_fitness-value_12-08_10-08/stats.csv'
     path_anti = RESULT_PATH + 'HalfCheetah-v2_12-05_20-58/stats.csv'
-    path_fd = RESULT_PATH + 'HalfCheetah-v2_estimator-antithetic_fitness-rank_12-08_01-17/stats.csv'
+    path_fd = RESULT_PATH + 'HalfCheetah-v2_estimator-finite_difference_fitness-value_12-08_14-45/stats.csv'
 
     data_vanilla = load_stats(path_vanilla)[:750]
     data_anti = load_stats(path_anti)[:750]
@@ -72,11 +72,29 @@ def plot_NES_rank() -> None:
 
 
 def plot_NES_workers() -> None:
-    pass
+    path_worker_14 = RESULT_PATH + 'HalfCheetah-v2_12-05_20-58/stats.csv'
+    path_worker_30 = RESULT_PATH + 'HalfCheetah-v2_estimator-antithetic_fitness-value_worker-30_12-08_21-03/stats.csv'
+    path_worker_45 = RESULT_PATH + 'HalfCheetah-v2_estimator-antithetic_fitness-value_worker-45_12-08_21-05/stats.csv'
+    path_worker_70 = RESULT_PATH + 'HalfCheetah-v2_estimator-antithetic_fitness-rank_12-08_01-17/stats.csv'
 
+    data_14 = load_stats(path_worker_14)[:750]
+    data_30 = load_stats(path_worker_30)[:750]
+    data_45 = load_stats(path_worker_45)[:750]
+    data_70 = load_stats(path_worker_70)[:750]
 
+    smooth_and_fill_between(data_14, label='14 workers', smooth_weight=0, width=0, alpha=0.2)
+    smooth_and_fill_between(data_30, label='30 workers', smooth_weight=0, width=0, alpha=0.2)
+    smooth_and_fill_between(data_45, label='45 workers', smooth_weight=0, width=0, alpha=0.2)
+    smooth_and_fill_between(data_70, label='70 workers', smooth_weight=0, width=0, alpha=0.2)
+
+    plt.legend(loc='lower right')
+    plt.grid()
+    plt.xlabel('Generation')
+    plt.ylabel('Episode reward')
+    plt.show()
 
 
 if __name__ == '__main__':
-    plot_NES_variants()
+    #plot_NES_variants()
     #plot_NES_rank()
+    plot_NES_workers()
