@@ -1,0 +1,28 @@
+delta_std: 0.1
+env_config:
+  env_name: HalfCheetah-v2
+  max_episode_length: 1000
+estimator_type: antithetic
+fitness_type: value
+max_iteration: 751
+model_config:
+  action_high: 1.0
+  action_low: -1.0
+  hidden_layers:
+  - 64
+  - 64
+  in_dim: 17
+  out_dim: 6
+noise_sample_seed: 10
+noise_table_seed: 1234
+noise_table_size: 250000
+num_evaluation: 10
+num_rollouts: 10
+num_workers: 70
+optimizer_config:
+  batch_size: 500
+  beta1: 0.9
+  beta2: 0.999
+  learning_rate: 0.005
+result_path: /data/xukang/Project/ES/NaturalES/results/HalfCheetah-v2_estimator-antithetic_fitness-value_worker-70_12-09_08-16/
+save_model_interval: 250

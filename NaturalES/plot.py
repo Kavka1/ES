@@ -75,17 +75,17 @@ def plot_NES_workers() -> None:
     path_worker_14 = RESULT_PATH + 'HalfCheetah-v2_12-05_20-58/stats.csv'
     path_worker_30 = RESULT_PATH + 'HalfCheetah-v2_estimator-antithetic_fitness-value_worker-30_12-08_21-03/stats.csv'
     path_worker_45 = RESULT_PATH + 'HalfCheetah-v2_estimator-antithetic_fitness-value_worker-45_12-08_21-05/stats.csv'
-    path_worker_70 = RESULT_PATH + 'HalfCheetah-v2_estimator-antithetic_fitness-rank_12-08_01-17/stats.csv'
+    path_worker_70 = RESULT_PATH + 'HalfCheetah-v2_estimator-antithetic_fitness-value_worker-70_12-09_08-16/stats.csv'
 
     data_14 = load_stats(path_worker_14)[:750]
     data_30 = load_stats(path_worker_30)[:750]
     data_45 = load_stats(path_worker_45)[:750]
     data_70 = load_stats(path_worker_70)[:750]
 
-    smooth_and_fill_between(data_14, label='14 workers', smooth_weight=0, width=0, alpha=0.2)
-    smooth_and_fill_between(data_30, label='30 workers', smooth_weight=0, width=0, alpha=0.2)
-    smooth_and_fill_between(data_45, label='45 workers', smooth_weight=0, width=0, alpha=0.2)
-    smooth_and_fill_between(data_70, label='70 workers', smooth_weight=0, width=0, alpha=0.2)
+    smooth_and_fill_between(data_14, label='14 workers', smooth_weight=0.6, width=0, alpha=0.2)
+    smooth_and_fill_between(data_30, label='30 workers', smooth_weight=0.6, width=0, alpha=0.2)
+    smooth_and_fill_between(data_45, label='45 workers', smooth_weight=0.6, width=0, alpha=0.2)
+    smooth_and_fill_between(data_70, label='70 workers', smooth_weight=0.6, width=0, alpha=0.2)
 
     plt.legend(loc='lower right')
     plt.grid()
