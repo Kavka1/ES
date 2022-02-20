@@ -1,0 +1,28 @@
+delta_std: 0.1
+env_config:
+  env_name: Ant-v2
+  max_episode_length: 1000
+estimator_type: vanilla
+fitness_type: rank
+max_iteration: 3000
+model_config:
+  action_high: 1.0
+  action_low: -1.0
+  hidden_layers:
+  - 120
+  - 120
+  in_dim: 111
+  out_dim: 8
+noise_sample_seed: 10
+noise_table_seed: 1234
+noise_table_size: 250000
+num_evaluation: 10
+num_rollouts: 10
+num_workers: 50
+optimizer_config:
+  batch_size: 500
+  beta1: 0.9
+  beta2: 0.999
+  learning_rate: 0.005
+result_path: /data/xukang/Project/ES/NaturalES/results/Ant-v2_estimator-vanilla_fitness-rank_worker-50_12-09_21-55/
+save_model_interval: 250
