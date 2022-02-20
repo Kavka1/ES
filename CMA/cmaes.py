@@ -1,7 +1,6 @@
-from ctypes import cast
 from optparse import Option
 from tkinter import Menu
-from typing import Any, Dict, List, Tuple, Optional
+from typing import Any, Dict, List, Tuple, Optional, cast
 import math
 from matplotlib.pyplot import axis
 import numpy as np
@@ -17,13 +16,13 @@ _SIGMA_MAX = 1e32
 class CMA:
     def __init__(
         self,
-        mean: np.array,
+        mean: np.ndarray,
         sigma: float,
-        bounds: Optional[np.array] = None,
+        bounds: Optional[np.ndarray] = None,
         n_max_resampling: int = 100,
         seed: Optional[int] = None,
         population_size: Optional[int] = None,
-        cov: Optional[np.array] = None
+        cov: Optional[np.ndarray] = None
     ) -> None:
         assert sigma > 0, 'Overall std sigma must be non-zero positive'
         assert np.all(np.abs(mean) < _MEAN_MAX), f'Abs of all elements of mean vector must be less than {_MEAN_MAX}'
@@ -108,8 +107,8 @@ class CMA:
             assert cov.shape == (n_dim, n_dim), "Invalid shape of the covariance matrix"
 
         self._sigma = sigma
-        self._D: Optional[np.array] = None  # diagonal matrix with eigenvalues of C
-        self._B: Optional[np.array] = None  # matrix composed by eigenvectors of C
+        self._D: Optional[np.ndarray] = None  # diagonal matrix with eigenvalues of C
+        self._B: Optional[np.ndarray] = None  # matrix composed by eigenvectors of C
 
         assert bounds is None or _is_valid_bounds(bounds, mean), "Invalid bounds"
         self._bounds = bounds
@@ -156,42 +155,42 @@ class CMA:
 
     @property
     def generation(self) -> int:
-        self._g
+        return self._g
 
     def set_bounds(self, bounds: Optional[np.ndarray]) -> None:
         assert bounds is None or _is_valid_bounds(bounds, self._mean), "Invalid bounds"
         self._bounds = bounds
 
-    def _eigen_decomposition(self) -> Tuple[np.array, np.array]:
+    def _eigen_decomposition(self) -> Tuple[np.ndarray, np.ndarray]:
         if self._B is not None and self._D is not None:
             return self._B, self._D
         self._C = (self._C + self._C.T) / 2
         D2, B = np.linalg.eigh(self._C)
         D = np.sqrt(np.where(D2 < 0, _EPS, D2))
-        self._C = np.dot(np.dot(D, np.diag(D ** 2)), B.T)
+        self._C = np.dot(np.dot(B, np.diag(D ** 2)), B.T)
         self._B, self._D = B, D
         return B, D
 
-    def _sample_solution(self) -> np.array:
+    def _sample_solution(self) -> np.ndarray:
         B, D = self._eigen_decomposition()
         z = self._rng.randn(self._n_dim)
-        y = cast(np.array, B.dot(np.diag(D))).dot(z)
+        y = cast(np.ndarray, B.dot(np.diag(D))).dot(z)
         x = self._mean + self._sigma * y
         return x
 
-    def _is_feasible(self, param: np.array) -> bool:
+    def _is_feasible(self, param: np.ndarray) -> bool:
         if self._bounds is None:
             return True
         return cast(bool, np.all(param >= self._bounds[: ,0]) and np.all(param <= self._bounds[:, 1]))
 
-    def _repair_infeasible_params(self, param: np.array) -> np.array:
+    def _repair_infeasible_params(self, param: np.ndarray) -> np.ndarray:
         if self._bounds is None:
             return param
         param = np.where(param < self._bounds[:, 0], self._bounds[:, 0], param)
         param = np.where(param > self._bounds[:, 1], self._bounds[:, 1], param)
         return param
 
-    def ask(self) -> np.array:
+    def ask(self) -> np.ndarray:
         """sample a parameter
 
         Returns:
@@ -205,7 +204,7 @@ class CMA:
         x = self._repair_infeasible_params(x)
         return x
 
-    def tell(self, solutions: List[Tuple[np.array, float]]) -> None:
+    def tell(self, solutions: List[Tuple[np.ndarray, float]]) -> None:
         """Update based on the samples and corresponding values
 
         Args:
@@ -235,10 +234,10 @@ class CMA:
         # Selection
         y_w = np.sum(y_k[: self._mu].T * self._weights[: self._mu], axis=1)
         # Mean update
-        self._mean += self._cm * self._sigma * y_w
+        self._mean += self._c_m * self._sigma * y_w
 
         # Step-size control
-        C_2 = cast(np.array, cast(np.array, B.dot(np.diag(1 / D))).dot(B.T))    # C^(-1/2) = B D^(-1) B^T
+        C_2 = cast(np.ndarray, cast(np.ndarray, B.dot(np.diag(1 / D))).dot(B.T))    # C^(-1/2) = B D^(-1) B^T
         self._p_sigma = (1 - self._c_sigma) * self._p_sigma + math.sqrt(self._c_sigma * (2 - self._c_sigma) * self._mu_eff) * C_2.dot(y_w)
         norm_p_sigma = np.linalg.norm(self._p_sigma)
         self._sigma *= np.exp((self._c_sigma / self._d_sigma) * (norm_p_sigma / self._chi_n - 1))
