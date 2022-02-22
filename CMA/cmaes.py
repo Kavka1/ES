@@ -1,11 +1,7 @@
-from optparse import Option
-from tkinter import Menu
 from typing import Any, Dict, List, Tuple, Optional, cast
 import math
-from matplotlib.pyplot import axis
 import numpy as np
 from ES.CMA.utils import _is_valid_bounds, _compress_symmetric, _decompress_symmetric
-from pytest import param
 
 
 _EPS = 1e-8
